@@ -8,3 +8,4 @@ docker-compose.yml
 npm-debug.log*
 yarn-error.log*
 api.js.DS_Store
+.DS_Store
