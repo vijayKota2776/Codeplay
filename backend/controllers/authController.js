@@ -4,6 +4,7 @@ const Joi = require('joi');
 const User = require('../models/User');
 
 const registerSchema = Joi.object({
+  name: Joi.string().min(2).optional(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required()
 });
@@ -15,7 +16,7 @@ const loginSchema = Joi.object({
 
 const register = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
 
     const existing = await User.findOne({ email });
     if (existing) {
@@ -23,11 +24,15 @@ const register = async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashed });
+    const userData = { email, password: hashed };
+    if (name) {
+      userData.userName = name;
+    }
+    const user = new User(userData);
     await user.save();
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
-    res.json({ token, user: { id: user._id, email, role: user.role } });
+    res.json({ token, user: { id: user._id, email, userName: user.userName, role: user.role } });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
