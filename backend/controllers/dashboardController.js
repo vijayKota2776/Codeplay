@@ -1,4 +1,4 @@
-// backend/controllers/dashboardController.js
+
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Submission = require('../models/Submission');
@@ -16,7 +16,7 @@ const getDashboard = async (req, res) => {
     const reviewsGiven = await PeerReview.countDocuments({ reviewerId: req.user.id });
     const totalXp = user.progress.reduce((sum, p) => sum + (p.xp || 0), 0);
 
-    // -------- completedByCourse (as before) --------
+
     const completedByCourse = await Promise.all(
       user.progress.map(async (p) => {
         let courseTitle = 'Unknown Course';
@@ -33,7 +33,7 @@ const getDashboard = async (req, res) => {
       })
     );
 
-    // -------- recentSubmissions: last 3 --------
+
     const rawRecent = await Submission.find({ userId: req.user.id })
       .sort({ createdAt: -1 })
       .limit(3)
@@ -45,8 +45,8 @@ const getDashboard = async (req, res) => {
 
     const recentCourses = recentCourseIds.length
       ? await Course.find({ _id: { $in: recentCourseIds } })
-          .select('title sections')
-          .lean()
+        .select('title sections')
+        .lean()
       : [];
 
     const courseMap = new Map(
@@ -111,27 +111,66 @@ const getDashboard = async (req, res) => {
       }
     }
 
-    return res.json({
-      totalXp,
+    // -------- Formatted Response for Frontend --------
+
+    // Calculate Stats
+    // Assuming 10 hours per course for mock calculation if not tracked
+    // Real calculation: sum of durations? For now mock based on progress.
+    const totalHours = Math.floor(totalXp / 100) + (user.progress.length * 2);
+
+    // Calculate total completed labs/topics across all courses
+    const labsCompleted = user.progress.reduce((acc, curr) => acc + (curr.completed ? curr.completed.length : 0), 0);
+
+    const stats = {
+      totalHours: totalHours,
+      coursesEnrolled: user.progress.length, // Number of active courses
+      labsCompleted: labsCompleted,
+      submissions: submissionsCount,
       currentStreak: user.currentStreak || 0,
-      longestStreak: user.longestStreak || 0,
-      coursesProgress: user.progress,
-      completedByCourse,
-      submissionsCount,
-      reviewsGiven,
-      recentSubmissions,
-      nextTopic,
+      totalXp: totalXp
+    };
+
+    // Format Recent Activity
+    // The frontend expects: { type: 'submission', description: '...', time: '...', badge: { text: '', variant: '' } }
+    const recentActivity = recentSubmissions.map(sub => {
+      const timeDiff = new Date() - new Date(sub.createdAt);
+      const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+      const days = Math.floor(hours / 24);
+      let timeString = 'Just now';
+
+      if (days > 0) timeString = `${days} day${days > 1 ? 's' : ''} ago`;
+      else if (hours > 0) timeString = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+      else if (timeDiff > 60000) timeString = `${Math.floor(timeDiff / 60000)} mins ago`;
+
+      return {
+        type: 'submission',
+        description: `Completed ${sub.topicTitle || 'an exercise'} in ${sub.courseTitle}`,
+        time: timeString,
+        badge: {
+          text: '+10 XP',
+          variant: 'success'
+        }
+      };
+    });
+
+    return res.json({
+      stats,
+      recentActivity,
+      completedByCourse, // Keeping these just in case other views need them
+      nextTopic
     });
   } catch (err) {
+    console.error('Dashboard Error:', err);
     return res.status(500).json({ error: err.message });
   }
 };
 
 const getLeaderboard = async (req, res) => {
   try {
-    const users = await User.find().select('email progress');
+    const users = await User.find().select('email userName progress');
     const rows = users.map((u) => ({
       email: u.email,
+      name: u.userName || u.email.split('@')[0],
       xp: u.progress.reduce((sum, p) => sum + (p.xp || 0), 0),
     }));
     rows.sort((a, b) => b.xp - a.xp);

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom'; // Removed Link
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
-import ReactDOM from 'react-dom/client'; // Import ReactDOM for direct React 18 render if needed, though often iframe uses its own
+import ReactDOM from 'react-dom/client';
 import { api } from '../api';
 import AppLayout from '../layouts/AppLayout';
 import Button from '../components/ui/Button';
@@ -10,11 +10,11 @@ import Spinner from '../components/ui/Spinner';
 
 export default function LabPage() {
     const [searchParams] = useSearchParams();
-    const navigate = useNavigate(); // eslint-disable-line no-unused-vars
+    const navigate = useNavigate();
     const courseId = searchParams.get('courseId');
     const topicId = searchParams.get('topicId');
 
-    // -- State Definitions --
+
     const [code, setCode] = useState(`// Welcome to the React Playground!
 // Define a component named App to see your changes.
 
@@ -49,11 +49,10 @@ window.App = App;
     const [submitting, setSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
     const [labData, setLabData] = useState(null);
-    const [activeTab, setActiveTab] = useState('preview'); // 'preview' or 'console'
+    const [activeTab, setActiveTab] = useState('preview');
 
     const editorRef = useRef(null);
 
-    // Initial load
     useEffect(() => {
         const fetchLabData = async () => {
             if (!courseId || !topicId) {
@@ -61,11 +60,7 @@ window.App = App;
                 return;
             }
             try {
-                // Here we would fetch the specific exercise details
-                // const res = await api.get(\`/courses/\${courseId}/topics/\${topicId}\`);
-                // setLabData(res.data);
 
-                // For now, mock it or fetch basic course info
                 setLabData({ title: 'React Lab' });
             } catch (error) {
                 console.error("Failed to load lab data", error);
@@ -81,8 +76,7 @@ window.App = App;
     };
 
     const generatePreview = () => {
-        // We inject the user's code into an HTML template
-        // Note: In a real production app, you might want to use a more robust bundler or sandbox (like Sandpack)
+
         const html = `
             <!DOCTYPE html>
             <html>
@@ -134,31 +128,35 @@ window.App = App;
     const runCode = async () => {
         setRunning(true);
         setActiveTab('preview');
-        // Reset output
         setOutput('');
 
-        // Update the iframe
         const iframe = document.getElementById('preview-frame');
         if (iframe) {
             iframe.srcdoc = generatePreview();
         }
 
-        // Emulate a delay for UX
         setTimeout(() => {
             setRunning(false);
         }, 800);
     };
 
     const submitCode = async () => {
+        if (!courseId || !topicId) {
+            alert('Error: Missing Course or Topic ID. Cannot submit progress.');
+            console.error('Missing IDs:', { courseId, topicId });
+            return;
+        }
+
         setSubmitting(true);
         try {
+            console.log('Submitting code for:', { courseId, topicId });
             await api.post('/submissions', {
                 courseId,
                 topicId,
                 code,
                 status: 'completed'
             });
-            alert('Great job! Your code has been saved.');
+            alert('Great job! Your code has been saved and progress updated.');
         } catch (error) {
             console.error('Submission error', error);
             alert('Failed to submit code. Please try again.');
@@ -167,7 +165,6 @@ window.App = App;
         }
     };
 
-    // Listen for iframe errors
     useEffect(() => {
         const handleMessage = (event) => {
             if (event.data?.type === 'ERROR') {
@@ -192,7 +189,6 @@ window.App = App;
     return (
         <AppLayout>
             <div className="space-y-4 animate-fadeInUp max-w-[1920px] mx-auto">
-                {/* Header */}
                 <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-4">
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-1">
@@ -233,7 +229,7 @@ window.App = App;
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-250px)] min-h-[500px]">
-                    {/* Editor Column */}
+
                     <div className="glass rounded-xl overflow-hidden flex flex-col h-full border border-[var(--border-color)] shadow-lg">
                         <div className="bg-[var(--surface-secondary)] px-4 py-2 border-b border-[var(--border-color)] flex justify-between items-center">
                             <span className="text-sm font-mono text-[var(--text-secondary)] flex items-center gap-2">
@@ -266,7 +262,7 @@ window.App = App;
                         </div>
                     </div>
 
-                    {/* Preview Column */}
+
                     <div className="glass rounded-xl overflow-hidden flex flex-col h-full border border-[var(--border-color)] shadow-lg relative bg-black/40">
                         <div className="bg-[var(--surface-secondary)] px-4 py-2 border-b border-[var(--border-color)] flex gap-4">
                             <button
@@ -284,7 +280,7 @@ window.App = App;
                         </div>
 
                         <div className="flex-1 relative bg-white/5">
-                            {/* Iframe Preview */}
+
                             <iframe
                                 id="preview-frame"
                                 title="Live Preview"
@@ -292,7 +288,7 @@ window.App = App;
                                 sandbox="allow-scripts allow-same-origin"
                             />
 
-                            {/* Console Output */}
+
                             <div className={`p-4 font-mono text-sm h-full overflow-y-auto ${activeTab === 'console' ? 'block' : 'hidden'}`}>
                                 {output ? (
                                     <pre className="text-red-400 whitespace-pre-wrap">{output}</pre>

@@ -16,12 +16,9 @@ export default function TopicPage() {
     useEffect(() => {
         const fetchTopicData = async () => {
             try {
-                // Fetch the full course structure since we don't have a direct /api/topics/:id endpoint
                 const res = await api.get(`/courses/${courseId}`);
                 const courseData = res.data;
                 setCourse(courseData);
-
-                // Find the topic within sections or flat topics list
                 let foundTopic = null;
 
                 if (courseData.sections && courseData.sections.length > 0) {
@@ -37,6 +34,22 @@ export default function TopicPage() {
                 }
 
                 setTopic(foundTopic);
+
+                // Fetch User Progress for this course
+                try {
+                    const progRes = await api.get(`/progress/${courseId}`);
+                    const completedIds = progRes.data?.completed || [];
+
+                    if (foundTopic && (foundTopic._id || foundTopic.id)) {
+                        const tId = foundTopic._id || foundTopic.id;
+                        if (completedIds.includes(tId)) {
+                            setTopic(prev => ({ ...prev, completed: true }));
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to load progress:', err);
+                }
+
             } catch (error) {
                 console.error('Failed to fetch topic data:', error);
             } finally {
@@ -74,7 +87,7 @@ export default function TopicPage() {
         );
     }
 
-    // Simple Markdown Formatter
+
     const formatContent = (content) => {
         if (!content) return null;
 
@@ -86,16 +99,13 @@ export default function TopicPage() {
             const trimmed = line.trim();
 
             if (trimmed.startsWith('- ')) {
-                // Add to current list
                 currentList.push(trimmed.substring(2));
             } else {
-                // If we were building a list, push it to blocks and clear
                 if (currentList.length > 0) {
                     blocks.push({ type: 'list', items: [...currentList] });
                     currentList = [];
                 }
 
-                // Add paragraph or spacer
                 if (trimmed.length === 0) {
                     blocks.push({ type: 'spacer' });
                 } else {
@@ -104,7 +114,6 @@ export default function TopicPage() {
             }
         });
 
-        // Push any remaining list
         if (currentList.length > 0) {
             blocks.push({ type: 'list', items: [...currentList] });
         }
@@ -133,7 +142,6 @@ export default function TopicPage() {
     };
 
     const renderInlineStyles = (text) => {
-        // Handle **Bold**
         const parts = text.split(/(\*\*.*?\*\*)/g);
         return parts.map((part, i) => {
             if (part.startsWith('**') && part.endsWith('**')) {
@@ -146,7 +154,6 @@ export default function TopicPage() {
     return (
         <AppLayout>
             <div className="max-w-4xl mx-auto space-y-8 animate-fadeInUp">
-                {/* Navigation Header */}
                 <div className="flex items-center gap-4">
                     <Button
                         variant="ghost"
@@ -159,7 +166,6 @@ export default function TopicPage() {
                     </Button>
                 </div>
 
-                {/* Main Content Card */}
                 <div className="card-refined p-8 md:p-12">
                     <div className="flex items-start justify-between gap-6 mb-8 border-b border-[var(--border-color)] pb-8">
                         <div>
@@ -180,11 +186,6 @@ export default function TopicPage() {
                     </div>
 
                     <div className="prose prose-lg dark:prose-invert max-w-none text-[var(--text-secondary)] leading-relaxed">
-                        {/* 
-                            This is where the explanation content goes. 
-                            If the content is markdown, we would use a markdown renderer here.
-                            For now, we just display the text string.
-                        */}
                         {topic.content ? (
                             <div>{formatContent(topic.content)}</div>
                         ) : (
@@ -195,7 +196,6 @@ export default function TopicPage() {
                     </div>
                 </div>
 
-                {/* Action Footer */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-[var(--surface-refined-elevated)] p-6 rounded-2xl border border-[var(--border-refined)]">
                     <div className="text-center md:text-left">
                         <h3 className="text-lg font-semibold text-[var(--text-primary)]">
