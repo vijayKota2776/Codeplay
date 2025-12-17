@@ -1,13 +1,8 @@
-// backend/routes/progressRoutes.js
 const express = require('express');
 const router = express.Router();
 
-// adjust paths to match your project:
-const auth = require('../middleware/auth');              // module.exports = auth;
-const { updateProgress } = require('../controllers/progressController');
-// or, if your controller does module.exports = { updateProgress }
-// keep as above; if it does module.exports = updateProgress, change import to:
-// const updateProgress = require('../controllers/progressController');
+const auth = require('../middleware/auth');
+const { updateProgress, getProgress } = require('../controllers/progressController');
 
 function basicProgressValidator(req, res, next) {
   const { courseId, topicId, xp } = req.body;
@@ -20,7 +15,9 @@ function basicProgressValidator(req, res, next) {
   next();
 }
 
-// POST /api/progress/update
+// GET /api/progress/:courseId
+router.get('/:courseId', auth, getProgress);
+
 router.post(
   '/update',
   auth,
