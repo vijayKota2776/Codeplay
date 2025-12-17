@@ -5,7 +5,8 @@
   "scripts": {
     "start": "cd backend && node server.js",
     "dev": "cd backend && node server.js",
-    "build": "npm install --prefix backend"
+    "build": "npm install --prefix backend",
+    "postinstall": "npm install --prefix backend"
   },
   "dependencies": {
     "concurrently": "^8.0.0"
