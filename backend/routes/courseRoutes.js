@@ -40,7 +40,7 @@ router.post(
 router.get('/', async (req, res) => {
   try {
     const courses = await Course.find().select(
-      'title description language difficulty'
+      'title description duration icon type difficulty level tags sections topics'
     );
     res.json(courses);
   } catch (err) {

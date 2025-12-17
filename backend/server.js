@@ -43,9 +43,50 @@ app.use('/api/labs', labRoutes);
 
 const PORT = process.env.PORT || 4000;
 
+const http = require('http');
+const { Server } = require('socket.io');
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Allow all origins for simplicity in this demo, restrict in prod
+    methods: ["GET", "POST"]
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log(`User Connected: ${socket.id}`);
+
+  socket.on('join_room', (data) => {
+    socket.join(data);
+    console.log(`User with ID: ${socket.id} joined room: ${data}`);
+  });
+
+  socket.on('leave_room', (data) => {
+    socket.leave(data);
+    console.log(`User with ID: ${socket.id} left room: ${data}`);
+  });
+
+  socket.on('code_change', (data) => {
+    // data should contain { room, fileId, content }
+    // Broadcast to everyone else in the room
+    socket.to(data.room).emit('receive_code_change', data);
+  });
+
+  socket.on('send_message', (data) => {
+    // data: { room, sender, message, timestamp }
+    io.in(data.room).emit('receive_message', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User Disconnected', socket.id);
+  });
+});
+
 if (require.main === module) {
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`CodePlay backend running on http://localhost:${PORT}`);
+    console.log(`Socket.IO initialized`);
   });
 }
 

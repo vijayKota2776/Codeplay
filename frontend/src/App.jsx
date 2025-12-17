@@ -7,6 +7,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import CoursesPage from './pages/CoursesPage';
 import CourseDetailPage from './pages/CourseDetailPage';
+import TopicPage from './pages/TopicPage';
 import IdePage from './pages/IdePage';
 import LabPage from './pages/LabPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -48,6 +49,15 @@ export default function App() {
                 element={
                     <ProtectedRoute>
                         <CourseDetailPage />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/courses/:courseId/topics/:topicId"
+                element={
+                    <ProtectedRoute>
+                        <TopicPage />
                     </ProtectedRoute>
                 }
             />

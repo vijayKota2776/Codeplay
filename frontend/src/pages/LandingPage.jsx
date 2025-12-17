@@ -8,8 +8,7 @@ import {
     Rocket,
     Users,
     Code,
-    Terminal,
-    CheckCircle
+    Terminal
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';

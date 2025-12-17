@@ -14,14 +14,20 @@ export default function CoursesPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
 
+    const [error, setError] = useState(null);
+
     useEffect(() => {
         const fetchCourses = async () => {
             try {
+                // Explicitly log the URL being requested for debugging
+                console.log('Fetching courses from:', api.defaults.baseURL + '/courses');
                 const res = await api.get('/courses');
                 setCourses(res.data);
                 setFilteredCourses(res.data);
-            } catch (error) {
-                console.error('Failed to fetch courses:', error);
+                setError(null);
+            } catch (err) {
+                console.error('Failed to fetch courses:', err);
+                setError(err.message || 'Failed to load courses. Please make sure the backend server is running.');
             } finally {
                 setLoading(false);
             }
@@ -44,6 +50,30 @@ export default function CoursesPage() {
             <AppLayout>
                 <div className="flex items-center justify-center min-h-[60vh]">
                     <Spinner size="xl" />
+                </div>
+            </AppLayout>
+        );
+    }
+
+    if (error) {
+        return (
+            <AppLayout>
+                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+                    <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
+                        <svg className="w-8 h-8 text-[var(--color-error)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Connection Error</h3>
+                    <p className="text-[var(--text-secondary)] mb-6 max-w-md">
+                        {error}
+                    </p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]/90 transition-colors"
+                    >
+                        Retry Connection
+                    </button>
                 </div>
             </AppLayout>
         );
@@ -99,7 +129,10 @@ export default function CoursesPage() {
                                         <div className="flex items-center gap-4 text-sm">
                                             <div className="flex items-center gap-1 text-[var(--text-tertiary)]">
                                                 <BookOpen className="w-4 h-4" />
-                                                <span>{course.topics?.length || 0} topics</span>
+                                                <span>
+                                                    {(course.sections?.reduce((acc, sec) => acc + (sec.topics?.length || 0), 0) || 0) +
+                                                        (course.topics?.length || 0)} modules
+                                                </span>
                                             </div>
                                             <div className="flex items-center gap-1 text-[var(--text-tertiary)]">
                                                 <Clock className="w-4 h-4" />

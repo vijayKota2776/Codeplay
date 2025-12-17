@@ -1,89 +1,183 @@
 import { useState, useRef, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom'; // Removed Link
 import Editor from '@monaco-editor/react';
+import ReactDOM from 'react-dom/client'; // Import ReactDOM for direct React 18 render if needed, though often iframe uses its own
 import { api } from '../api';
 import AppLayout from '../layouts/AppLayout';
 import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Spinner from '../components/ui/Spinner';
 
 export default function LabPage() {
     const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // eslint-disable-line no-unused-vars
     const courseId = searchParams.get('courseId');
     const topicId = searchParams.get('topicId');
 
-    const [labData, setLabData] = useState(null);
-    const [code, setCode] = useState('');
+    // -- State Definitions --
+    const [code, setCode] = useState(`// Welcome to the React Playground!
+// Define a component named App to see your changes.
+
+const App = () => {
+  const [count, setCount] = React.useState(0);
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'sans-serif', textAlign: 'center' }}>
+      <h1>Hello CodePlay! 🚀</h1>
+      <p>This is a live React environment.</p>
+      
+      <div style={{ 
+        marginTop: '20px', 
+        padding: '20px', 
+        background: 'rgba(255,255,255,0.1)', 
+        borderRadius: '8px' 
+      }}>
+        <h2>Clicks: {count}</h2>
+        <button onClick={() => setCount(count + 1)}>
+          Click Me
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// DO NOT DELETE: This line is required for the preview system to find your component
+window.App = App;
+`);
     const [output, setOutput] = useState('');
-    const [loading, setLoading] = useState(true);
     const [running, setRunning] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [labData, setLabData] = useState(null);
+    const [activeTab, setActiveTab] = useState('preview'); // 'preview' or 'console'
+
     const editorRef = useRef(null);
 
+    // Initial load
     useEffect(() => {
-        if (!courseId || !topicId) {
-            navigate('/courses');
-            return;
-        }
-
         const fetchLabData = async () => {
+            if (!courseId || !topicId) {
+                setLoading(false);
+                return;
+            }
             try {
-                const res = await api.get(`/lab?courseId=${courseId}&topicId=${topicId}`);
-                setLabData(res.data);
-                setCode(res.data.starterCode || '// Start coding here!');
+                // Here we would fetch the specific exercise details
+                // const res = await api.get(\`/courses/\${courseId}/topics/\${topicId}\`);
+                // setLabData(res.data);
+
+                // For now, mock it or fetch basic course info
+                setLabData({ title: 'React Lab' });
             } catch (error) {
-                console.error('Failed to fetch lab data:', error);
+                console.error("Failed to load lab data", error);
             } finally {
                 setLoading(false);
             }
         };
-
         fetchLabData();
-    }, [courseId, topicId, navigate]);
+    }, [courseId, topicId]);
 
-    const handleEditorDidMount = (editor) => {
+    const handleEditorDidMount = (editor, monaco) => {
         editorRef.current = editor;
+    };
+
+    const generatePreview = () => {
+        // We inject the user's code into an HTML template
+        // Note: In a real production app, you might want to use a more robust bundler or sandbox (like Sandpack)
+        const html = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="UTF-8" />
+                    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+                    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+                    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+                    <style>
+                        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #fff; background: transparent; margin: 0; padding: 1rem; }
+                        /* Add some basic fast styling for common elements */
+                        h1 { color: #60a5fa; }
+                        button { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
+                        button:hover { background: #2563eb; }
+                    </style>
+                </head>
+                <body>
+                    <div id="root"></div>
+                    <script type="text/babel">
+                        window.onerror = function(message, source, lineno, colno, error) {
+                            window.parent.postMessage({ type: 'ERROR', message }, '*');
+                        };
+                        
+                        try {
+                            // -- USER CODE START --
+                            ${code}
+                            // -- USER CODE END --
+
+                            // Check if App exists and render it
+                            // We look for window.App if declared globally, or simply App if in scope
+                            const UserApp = window.App || (typeof App !== 'undefined' ? App : null);
+
+                            if (UserApp) {
+                                const root = ReactDOM.createRoot(document.getElementById('root'));
+                                root.render(<UserApp />);
+                            } else {
+                                document.getElementById('root').innerHTML = '<div style="color: #fbbf24; padding: 20px; text-align: center;">⚠️ <strong>App</strong> component not found.<br/><br/>Please define <code>const App = () => { ... }</code> and ensure <code>window.App = App</code> is at the end if strict mode is active.</div>';
+                            }
+                        } catch (err) {
+                            window.parent.postMessage({ type: 'ERROR', message: err.message }, '*');
+                        }
+                    </script>
+                </body>
+            </html>
+        `;
+        return html;
     };
 
     const runCode = async () => {
         setRunning(true);
-        setOutput('▶ Running code in Docker environment...\n');
+        setActiveTab('preview');
+        // Reset output
+        setOutput('');
 
-        try {
-            const res = await api.post('/execute-code', {
-                code,
-                language: labData?.language || 'javascript',
-                courseId,
-                topicId,
-            });
-
-            setOutput(prev => prev + '\n' + (res.data.output || 'Code executed successfully'));
-        } catch (error) {
-            setOutput(prev => prev + '\nError: ' + (error.response?.data?.error || 'Execution failed'));
-        } finally {
-            setRunning(false);
+        // Update the iframe
+        const iframe = document.getElementById('preview-frame');
+        if (iframe) {
+            iframe.srcdoc = generatePreview();
         }
+
+        // Emulate a delay for UX
+        setTimeout(() => {
+            setRunning(false);
+        }, 800);
     };
 
     const submitCode = async () => {
         setSubmitting(true);
-
         try {
-            await api.post('/submit-code', {
-                code,
+            await api.post('/submissions', {
                 courseId,
                 topicId,
+                code,
+                status: 'completed'
             });
-
-            setOutput('✅ Code submitted successfully!\n\nYour submission has been recorded.');
+            alert('Great job! Your code has been saved.');
         } catch (error) {
-            setOutput('❌ Submission failed: ' + (error.response?.data?.error || 'Please try again'));
+            console.error('Submission error', error);
+            alert('Failed to submit code. Please try again.');
         } finally {
             setSubmitting(false);
         }
     };
+
+    // Listen for iframe errors
+    useEffect(() => {
+        const handleMessage = (event) => {
+            if (event.data?.type === 'ERROR') {
+                setOutput(prev => prev + '\n❌ Runtime Error: ' + event.data.message);
+                setActiveTab('console');
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, []);
 
     if (loading) {
         return (
@@ -97,34 +191,36 @@ export default function LabPage() {
 
     return (
         <AppLayout>
-            <div className="space-y-4 animate-fadeInUp">
+            <div className="space-y-4 animate-fadeInUp max-w-[1920px] mx-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-4">
                     <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                            <h1 className="text-3xl font-extrabold text-gradient">
-                                {labData?.title || 'Lab Environment'}
+                        <div className="flex items-center gap-3 mb-1">
+                            <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+                                {labData?.title || 'React Playground'}
                             </h1>
-                            <Badge variant="accent" dot pulse>
-                                Live Environment
+                            <Badge variant="accent" dot>
+                                Live Preview
                             </Badge>
                         </div>
-                        <p className="text-[var(--text-secondary)]">
-                            {labData?.description || 'Complete the lab exercise below'}
+                        <p className="text-sm text-[var(--text-secondary)]">
+                            Create an <code>App</code> component to visualize your code.
                         </p>
                     </div>
                     <div className="flex gap-3">
                         <Button
-                            variant="secondary"
+                            variant="success"
                             onClick={runCode}
                             loading={running}
+                            className="min-w-[100px]"
                             icon={
-                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             }
                         >
-                            Run
+                            Run Code
                         </Button>
                         <Button
                             variant="primary"
@@ -136,78 +232,78 @@ export default function LabPage() {
                     </div>
                 </div>
 
-                {/* Instructions */}
-                {labData?.instructions && (
-                    <Card variant="glass">
-                        <h3 className="font-bold text-[var(--text-primary)] mb-2 flex items-center gap-2">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Instructions
-                        </h3>
-                        <div className="prose prose-invert max-w-none">
-                            <p className="text-[var(--text-secondary)]">{labData.instructions}</p>
-                        </div>
-                    </Card>
-                )}
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {/* Editor */}
-                    <Card variant="glass" className="p-0 overflow-hidden">
-                        <div className="bg-[var(--surface-secondary)] px-4 py-2 border-b border-[var(--border-color)]">
-                            <span className="text-sm font-mono text-[var(--text-secondary)]">
-                                editor.{labData?.language || 'js'}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-250px)] min-h-[500px]">
+                    {/* Editor Column */}
+                    <div className="glass rounded-xl overflow-hidden flex flex-col h-full border border-[var(--border-color)] shadow-lg">
+                        <div className="bg-[var(--surface-secondary)] px-4 py-2 border-b border-[var(--border-color)] flex justify-between items-center">
+                            <span className="text-sm font-mono text-[var(--text-secondary)] flex items-center gap-2">
+                                <svg className="w-4 h-4 text-[#61DAFB]" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                                </svg>
+                                App.jsx
                             </span>
                         </div>
-                        <div className="h-[500px]">
+                        <div className="flex-1 relative">
                             <Editor
                                 height="100%"
-                                defaultLanguage={labData?.language || 'javascript'}
+                                defaultLanguage="javascript"
+                                language="javascript"
                                 value={code}
                                 onChange={(value) => setCode(value || '')}
                                 onMount={handleEditorDidMount}
                                 theme="vs-dark"
                                 options={{
                                     minimap: { enabled: false },
-                                    fontSize: 14,
+                                    fontSize: 15,
                                     lineNumbers: 'on',
+                                    padding: { top: 16 },
                                     roundedSelection: true,
                                     scrollBeyondLastLine: false,
                                     automaticLayout: true,
+                                    fontFamily: '"Fira Code", monospace',
                                 }}
                             />
                         </div>
-                    </Card>
+                    </div>
 
-                    {/* Output/Terminal */}
-                    <Card variant="glass">
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2">
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                Output
-                            </h3>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setOutput('')}
+                    {/* Preview Column */}
+                    <div className="glass rounded-xl overflow-hidden flex flex-col h-full border border-[var(--border-color)] shadow-lg relative bg-black/40">
+                        <div className="bg-[var(--surface-secondary)] px-4 py-2 border-b border-[var(--border-color)] flex gap-4">
+                            <button
+                                onClick={() => setActiveTab('preview')}
+                                className={`text-sm font-medium pb-2 -mb-2.5 px-2 transition-colors ${activeTab === 'preview' ? 'text-[var(--color-primary)] border-b-2 border-[var(--color-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                             >
-                                Clear
-                            </Button>
+                                Preview
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('console')}
+                                className={`text-sm font-medium pb-2 -mb-2.5 px-2 transition-colors ${activeTab === 'console' ? 'text-[var(--color-primary)] border-b-2 border-[var(--color-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                            >
+                                Console / Errors
+                            </button>
                         </div>
-                        <div className="bg-[var(--color-dominant)] rounded-lg p-4 h-[500px] overflow-y-auto font-mono text-sm">
-                            {output ? (
-                                <pre className="text-[var(--text-primary)] whitespace-pre-wrap">
-                                    {output}
-                                </pre>
-                            ) : (
-                                <p className="text-[var(--text-tertiary)] italic">
-                                    Run your code to see output here...
-                                </p>
-                            )}
+
+                        <div className="flex-1 relative bg-white/5">
+                            {/* Iframe Preview */}
+                            <iframe
+                                id="preview-frame"
+                                title="Live Preview"
+                                className={`w-full h-full border-none bg-black/80 ${activeTab === 'preview' ? 'block' : 'hidden'}`}
+                                sandbox="allow-scripts allow-same-origin"
+                            />
+
+                            {/* Console Output */}
+                            <div className={`p-4 font-mono text-sm h-full overflow-y-auto ${activeTab === 'console' ? 'block' : 'hidden'}`}>
+                                {output ? (
+                                    <pre className="text-red-400 whitespace-pre-wrap">{output}</pre>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center h-full text-[var(--text-tertiary)]">
+                                        <p>No errors detected.</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </Card>
+                    </div>
                 </div>
             </div>
         </AppLayout>

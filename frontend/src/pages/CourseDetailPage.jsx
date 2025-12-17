@@ -83,76 +83,115 @@ export default function CourseDetailPage() {
                 </div>
 
                 {/* Course Topics/Modules */}
-                <div>
-                    <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
-                        Course Content
-                    </h2>
-                    {course.topics && course.topics.length > 0 ? (
-                        <div className="space-y-3">
-                            {course.topics.map((topic, index) => (
-                                <Card
-                                    key={topic._id || index}
-                                    variant="glass"
-                                    className="hover-lift cursor-pointer"
-                                    onClick={() => {
-                                        if (topic.hasLab) {
-                                            navigate(`/lab?courseId=${id}&topicId=${topic._id}`);
-                                        }
-                                    }}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4 flex-1">
-                                            <div className="w-12 h-12 rounded-lg bg-[var(--surface-secondary)] flex items-center justify-center font-bold text-[var(--color-accent)]">
-                                                {index + 1}
-                                            </div>
-                                            <div className="flex-1">
-                                                <h3 className="text-lg font-bold text-[var(--text-primary)]">
-                                                    {topic.title}
-                                                </h3>
-                                                {topic.description && (
-                                                    <p className="text-sm text-[var(--text-secondary)] mt-1">
-                                                        {topic.description}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            {topic.hasLab && (
-                                                <Badge variant="accent" dot>
-                                                    Lab Available
-                                                </Badge>
-                                            )}
-                                            {topic.completed && (
-                                                <div className="text-[var(--color-success)]">
-                                                    <CheckCircle className="w-6 h-6 fill-current" />
-                                                </div>
-                                            )}
-                                            <ChevronRight className="w-5 h-5 text-[var(--text-tertiary)]" />
-                                        </div>
-                                    </div>
-                                </Card>
-                            ))}
-                        </div>
-                    ) : (
-                        <Card variant="glass">
-                            <div className="text-center py-12">
-                                <p className="text-[var(--text-secondary)]">
-                                    Course content coming soon...
-                                </p>
-                            </div>
-                        </Card>
-                    )}
-                </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-4">
-                    <Button variant="primary" size="lg" className="flex-1">
-                        Continue Learning
-                    </Button>
-                    <Button variant="outline" onClick={() => navigate('/courses')}>
-                        Back to Courses
-                    </Button>
-                </div>
+
+                {/* Course Topics/Modules */}
+                {(course.sections && course.sections.length > 0) || (course.topics && course.topics.length > 0) ? (
+                    <div className="space-y-6">
+                        {/* Check if we have sections (new structure) or just topics (old structure) */}
+                        {course.sections && course.sections.length > 0 ? (
+                            course.sections.map((section, sIndex) => (
+                                <div key={section._id || sIndex} className="space-y-3">
+                                    <h3 className="text-xl font-bold text-[var(--text-primary)] px-2">
+                                        {section.title}
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {section.topics.map((topic, tIndex) => (
+                                            <Card
+                                                key={topic._id || tIndex}
+                                                variant="glass"
+                                                className="hover-lift cursor-pointer"
+                                                onClick={() => navigate(`/courses/${id}/topics/${topic._id || topic.id}`)}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-4 flex-1">
+                                                        <div className="w-10 h-10 rounded-lg bg-[var(--surface-secondary)] flex items-center justify-center font-bold text-[var(--color-accent)] text-sm">
+                                                            {sIndex + 1}.{tIndex + 1}
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <h4 className="text-lg font-bold text-[var(--text-primary)]">
+                                                                {topic.title}
+                                                            </h4>
+                                                            {topic.content && (
+                                                                <p className="text-sm text-[var(--text-secondary)] mt-1 line-clamp-1">
+                                                                    {topic.content}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <ChevronRight className="w-5 h-5 text-[var(--text-tertiary)]" />
+                                                    </div>
+                                                </div>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            /* Fallback for flat topics structure */
+                            <div className="space-y-3">
+                                {course.topics.map((topic, index) => (
+                                    <Card
+                                        key={topic._id || index}
+                                        variant="glass"
+                                        className="hover-lift cursor-pointer"
+                                        onClick={() => navigate(`/courses/${id}/topics/${topic._id || topic.id}`)}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4 flex-1">
+                                                <div className="w-12 h-12 rounded-lg bg-[var(--surface-secondary)] flex items-center justify-center font-bold text-[var(--color-accent)]">
+                                                    {index + 1}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h3 className="text-lg font-bold text-[var(--text-primary)]">
+                                                        {topic.title}
+                                                    </h3>
+                                                    {topic.description && (
+                                                        <p className="text-sm text-[var(--text-secondary)] mt-1">
+                                                            {topic.description}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                {topic.hasLab && (
+                                                    <Badge variant="accent" dot>
+                                                        Lab Available
+                                                    </Badge>
+                                                )}
+                                                {topic.completed && (
+                                                    <div className="text-[var(--color-success)]">
+                                                        <CheckCircle className="w-6 h-6 fill-current" />
+                                                    </div>
+                                                )}
+                                                <ChevronRight className="w-5 h-5 text-[var(--text-tertiary)]" />
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <Card variant="glass">
+                        <div className="text-center py-12">
+                            <p className="text-[var(--text-secondary)]">
+                                Course content coming soon...
+                            </p>
+                        </div>
+                    </Card>
+                )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4">
+                <Button variant="primary" size="lg" className="flex-1">
+                    Continue Learning
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/courses')}>
+                    Back to Courses
+                </Button>
             </div>
         </AppLayout>
     );

@@ -15,8 +15,12 @@ const sectionSchema = new mongoose.Schema({
 
 const courseSchema = new mongoose.Schema({
   title: String,
+  description: String,
+  duration: String,
+  icon: String,
   type: { type: String, enum: ['docs', 'video'] },
   difficulty: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: 'beginner' },
+  level: String,
   tags: [String],
   sections: [sectionSchema]
 });

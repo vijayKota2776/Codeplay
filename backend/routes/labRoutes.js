@@ -1,14 +1,19 @@
-// backend/routes/labRoutes.js
+
 const express = require('express');
 const router = express.Router();
 
 const Docker = require('dockerode');
-const docker = new Docker();
+let docker;
+try {
+  docker = new Docker();
+} catch (err) {
+  console.warn("Docker not initialized. Lab routes will not function.", err.message);
+}
 const auth = require('../middleware/auth');
 
 const labs = new Map();
 
-// track ports used while server is running
+
 const usedPorts = new Set();
 const PORT_MIN = 55000;
 const PORT_MAX = 55999;
@@ -35,12 +40,16 @@ function getStarterFiles() {
   };
 }
 
-// backend/routes/labRoutes.js
+
 router.post('/', auth, async (req, res) => {
   try {
     const { courseId, topicId } = req.body;
     if (!courseId || !topicId) {
       return res.status(400).json({ error: 'Missing courseId or topicId' });
+    }
+
+    if (!docker) {
+      return res.status(503).json({ error: 'Lab environment (Docker) is not available on this server.' });
     }
 
     const container = await docker.createContainer({
@@ -49,7 +58,7 @@ router.post('/', auth, async (req, res) => {
       HostConfig: {
         PublishAllPorts: false,
         PortBindings: {
-          '4173/tcp': [{ HostPort: '' }],   // let Docker choose free host port
+          '4173/tcp': [{ HostPort: '' }],
         },
       },
     });
@@ -65,7 +74,7 @@ router.post('/', auth, async (req, res) => {
       throw new Error('No host port bound for 4173/tcp');
     }
 
-    const hostPort = bindings[0].HostPort;     // e.g. "50000"
+    const hostPort = bindings[0].HostPort;
     const devUrl = `http://localhost:${hostPort}`;
     const labId = container.id.slice(0, 12);
 
@@ -88,7 +97,6 @@ router.post('/', auth, async (req, res) => {
 
 
 
-// in labRoutes.js
 router.post('/:labId/files', auth, async (req, res) => {
   const { labId } = req.params;
   const { path, content } = req.body;
@@ -101,14 +109,14 @@ router.post('/:labId/files', auth, async (req, res) => {
 });
 
 
-// GET /api/labs/:labId/files
+
 router.get('/:labId/files', auth, (req, res) => {
   const lab = labs.get(req.params.labId);
   if (!lab) return res.status(404).json({ error: 'Lab not found' });
   return res.json({ files: lab.files || {} });
 });
 
-// PUT /api/labs/:labId/files
+
 router.put('/:labId/files', auth, (req, res) => {
   const lab = labs.get(req.params.labId);
   if (!lab) return res.status(404).json({ error: 'Lab not found' });
