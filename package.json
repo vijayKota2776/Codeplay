@@ -1,14 +1,17 @@
 {
-  "devDependencies": {
-    "autoprefixer": "^10.4.22",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.17"
+  "name": "codeplay-root",
+  "version": "1.0.0",
+  "description": "Root package.json for deployment",
+  "scripts": {
+    "start": "cd backend && npm install && npm start",
+    "dev": "cd backend && npm install && npm run dev",
+    "heroku-postbuild": "cd backend && npm install",
+    "build": "cd backend && npm install"
   },
   "dependencies": {
-    "@monaco-editor/react": "^4.7.0",
-    "axios": "^1.13.2",
-    "framer-motion": "^12.23.25",
-    "lucide-react": "^0.556.0",
-    "react-router-dom": "^7.10.1"
+    "concurrently": "^8.0.0"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }
