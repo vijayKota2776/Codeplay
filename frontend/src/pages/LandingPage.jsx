@@ -64,7 +64,7 @@ export default function LandingPage() {
 
     return (
         <div className="min-h-screen bg-[var(--color-dominant)]">
-            {/* Navigation */}
+
             <nav className="fixed top-0 left-0 right-0 z-[var(--z-sticky)] glass border-b border-[var(--border-color)]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
@@ -84,9 +84,7 @@ export default function LandingPage() {
                 </div>
             </nav>
 
-            {/* Hero Section */}
             <section className="relative overflow-hidden pt-32 pb-20">
-                {/* Animated Background Elements */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div
                         className="absolute top-20 left-10 w-72 h-72 bg-[var(--color-secondary)] rounded-full opacity-10 blur-3xl"
@@ -123,7 +121,7 @@ export default function LandingPage() {
                         </div>
                     </div>
 
-                    {/* Code Animation */}
+
                     <div className="mt-16 glass rounded-2xl p-8 max-w-4xl mx-auto animate-fadeInUp">
                         <div className="flex items-center gap-2 mb-4">
                             <div className="w-3 h-3 rounded-full bg-[var(--color-error)]" />
@@ -148,7 +146,6 @@ developer.learn(); // ✨ Start your journey`}
                 </div>
             </section>
 
-            {/* Stats Section */}
             <section className="py-16 border-y border-[var(--border-color)] bg-[var(--surface-primary)]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -164,7 +161,6 @@ developer.learn(); // ✨ Start your journey`}
                 </div>
             </section>
 
-            {/* Features Section */}
             <section className="py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
@@ -201,7 +197,6 @@ developer.learn(); // ✨ Start your journey`}
                 </div>
             </section>
 
-            {/* How It Works Section */}
             <section className="py-20 bg-[var(--surface-primary)]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
@@ -247,7 +242,7 @@ developer.learn(); // ✨ Start your journey`}
                 </div>
             </section>
 
-            {/* CTA Section */}
+
             <section className="py-20">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <div className="glass rounded-2xl p-12 animate-fadeInUp">
@@ -269,7 +264,7 @@ developer.learn(); // ✨ Start your journey`}
                 </div>
             </section>
 
-            {/* Footer */}
+
             <footer className="border-t border-[var(--border-color)] py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">

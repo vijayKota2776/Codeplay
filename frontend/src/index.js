@@ -5,7 +5,7 @@ import App from './App';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
 
-// Silence ResizeObserver loop noise from Monaco editor
+
 const resizeObserverErr =
   'ResizeObserver loop completed with undelivered notifications.';
 const origConsoleError = window.console.error;

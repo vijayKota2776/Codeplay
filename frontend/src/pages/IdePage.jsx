@@ -7,7 +7,7 @@ import io from 'socket.io-client';
 import AppLayout from '../layouts/AppLayout';
 import Button from '../components/ui/Button';
 
-// Default Files
+
 const DEFAULT_FILES = [
     {
         id: '1',
@@ -129,33 +129,28 @@ h1 {
 ];
 
 export default function IdePage() {
-    // -- State --
+
     const [files, setFiles] = useState(DEFAULT_FILES);
-    const [activeFileId, setActiveFileId] = useState('1'); // App.jsx
+    const [activeFileId, setActiveFileId] = useState('1'); 
     const [running, setRunning] = useState(false);
 
-    // Layout State
     const [showPreview, setShowPreview] = useState(true);
     const [showTerminal, setShowTerminal] = useState(true);
 
-    // Collaboration State
     const [socket, setSocket] = useState(null);
     const [room, setRoom] = useState(null);
     const [isCollaborating, setIsCollaborating] = useState(false);
-    // Generate a random username for this session to identify "Me" vs others
+
     const [username] = useState(() => 'User-' + Math.floor(Math.random() * 10000));
 
-    // Chat / Peer Review State
     const [messages, setMessages] = useState([]);
     const [chatInput, setChatInput] = useState('');
     const chatEndRef = useRef(null);
 
-    // GitHub State
     const [isGithubConnected, setIsGithubConnected] = useState(false);
     const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
     const [isPushing, setIsPushing] = useState(false);
 
-    // Terminal State
     const [terminalLines, setTerminalLines] = useState([
         { type: 'system', content: 'CodePlay Shell v1.2.0' },
         { type: 'system', content: 'Type "npm start" to run your React application.' },
@@ -165,31 +160,23 @@ export default function IdePage() {
     const terminalEndRef = useRef(null);
     const editorRef = useRef(null);
 
-    // Active Tab State
     const [activeTab, setActiveTab] = useState('terminal');
 
-    // -- Derived State --
     const activeFile = files.find(f => f.id === activeFileId) || files[0];
 
-    // -- Effects --
     useEffect(() => {
-        // Auto-scroll terminal
         if (showTerminal) {
             terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
     }, [terminalLines, showTerminal, activeTab]);
 
     useEffect(() => {
-        // Listen for logs from preview
         const handleMessage = (event) => {
             if (!event.data) return;
             const { type, message } = event.data;
 
             if (type === 'ERROR') {
                 addToTerminal('error', `Runtime Error: ${message}`);
-                // Only auto-open if we are in terminal tab, or switch to console? 
-                // Let's just notify. 
-                // setShowTerminal(true); 
             } else if (type === 'CONSOLE_LOG') {
                 addToTerminal('info', message);
             } else if (type === 'CONSOLE_ERROR') {
@@ -200,12 +187,11 @@ export default function IdePage() {
         return () => window.removeEventListener('message', handleMessage);
     }, []);
 
-    // Socket Listener for Code Changes
     useEffect(() => {
         if (!socket) return;
 
         socket.on('receive_code_change', (data) => {
-            // Update the file content from the incoming data
+
             setFiles(prev => prev.map(f => f.id === data.fileId ? { ...f, content: data.content } : f));
         });
 
@@ -215,14 +201,11 @@ export default function IdePage() {
         };
     }, [socket]);
 
-    // Auto-scroll chat
     useEffect(() => {
         if (activeTab === 'discuss') {
             chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
     }, [messages, activeTab]);
-
-    // -- Handlers --
 
     const sendMessage = (e) => {
         e.preventDefault();
@@ -236,7 +219,7 @@ export default function IdePage() {
         };
 
         socket.emit('send_message', msgData);
-        setMessages(prev => [...prev, msgData]); // Add own message to state
+        setMessages(prev => [...prev, msgData]); 
         setChatInput('');
     };
 
@@ -277,8 +260,7 @@ export default function IdePage() {
         const roomId = prompt('Enter Collaboration Room ID (e.g., room-1):');
         if (!roomId) return;
 
-        // Initialize socket connection
-        const newSocket = io('http://localhost:5001'); // Adjust port if needed
+        const newSocket = io('http://localhost:5001'); 
 
         newSocket.on('connect', () => {
             addToTerminal('system', `Connected to collaboration server.`);
@@ -302,7 +284,6 @@ export default function IdePage() {
     const handleFileChange = (value) => {
         setFiles(prev => prev.map(f => f.id === activeFileId ? { ...f, content: value } : f));
 
-        // Emit change if collaborating
         if (socket && room) {
             socket.emit('code_change', { room, fileId: activeFileId, content: value });
         }
@@ -329,7 +310,7 @@ export default function IdePage() {
     };
 
     const deleteFile = (e, id) => {
-        e.stopPropagation(); // Prevent activating file
+        e.stopPropagation(); 
         if (files.length <= 1) {
             alert('Cannot delete the last file.');
             return;
@@ -407,7 +388,7 @@ export default function IdePage() {
     };
 
     const generatePreview = () => {
-        // Concatenate all JS content (naive approach for mock)
+
         const appCode = files.find(f => f.name === 'App.jsx')?.content || '';
         const stylesCode = files.filter(f => f.name.endsWith('.css')).map(f => f.content).join('\n');
 
@@ -480,11 +461,8 @@ export default function IdePage() {
 
     const runCode = () => {
         setRunning(true);
-        // Ensure preview is visible when running
         setShowPreview(true);
-        // show build output in terminal
         setActiveTab('terminal');
-        // And make sure terminal panel is open
         setShowTerminal(true);
 
         setTimeout(() => {
@@ -498,11 +476,9 @@ export default function IdePage() {
         }, 800);
     };
 
-    // -- Render --
     return (
         <AppLayout>
             <div className="h-[calc(100vh-100px)] flex flex-col animate-fadeInUp max-w-[1920px] mx-auto">
-                {/* Header */}
                 <div className="flex items-center justify-between mb-4 border-b border-[var(--border-color)] pb-4 px-2">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-500/10 rounded-lg">
@@ -552,10 +528,8 @@ export default function IdePage() {
                     </div>
                 </div>
 
-                {/* Main IDE Layout */}
                 <div className="flex-1 min-h-0 flex gap-4">
 
-                    {/* 1. File Explorer Sidebar */}
                     <div className="w-64 flex-shrink-0 rounded-xl border border-[var(--border-color)] bg-[var(--surface-secondary)] shadow-lg flex flex-col overflow-hidden">
                         <div className="p-3 border-b border-[var(--border-color)] flex items-center justify-between">
                             <span className="text-sm font-bold text-[var(--text-primary)]">EXPLORER</span>
@@ -592,7 +566,6 @@ export default function IdePage() {
                                                 }
                                                 <span className="truncate">{file.name}</span>
                                             </div>
-                                            {/* Delete button (hidden by default, show on hover) */}
                                             <button
                                                 onClick={(e) => deleteFile(e, file.id)}
                                                 className={`opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-400 rounded transition-all ${files.length <= 1 ? 'hidden' : ''}`}
@@ -602,7 +575,7 @@ export default function IdePage() {
                                             </button>
                                         </div>
                                     ))}
-                                    {/* Mock items to look busy */}
+
                                     <div className="flex items-center gap-2 px-3 py-1.5 rounded text-sm text-gray-500 cursor-not-allowed opacity-50">
                                         <FileText className="w-4 h-4 text-gray-500" />
                                         package.json
@@ -616,14 +589,10 @@ export default function IdePage() {
                         </div>
                     </div>
 
-                    {/* 2. Work Area (Editor + Preview + Terminal) */}
                     <div className="flex-1 flex flex-col gap-4 min-w-0">
 
-                        {/* Upper Section: Editor | Preview */}
                         <div className="flex-1 flex gap-4 min-h-0">
-                            {/* Code Editor */}
                             <div className="flex-1 rounded-xl border border-[var(--border-color)] bg-[#1e1e1e] shadow-xl flex flex-col overflow-hidden min-w-[300px]">
-                                {/* Tabs */}
                                 <div className="flex bg-[#252526] border-b border-[#333] overflow-x-auto scrollbar-hide">
                                     {files.map(file => (
                                         <div
@@ -664,7 +633,7 @@ export default function IdePage() {
                                 </div>
                             </div>
 
-                            {/* Live Preview Pane */}
+
                             {showPreview && (
                                 <div className="w-[40%] rounded-xl border border-[var(--border-color)] bg-white shadow-xl flex flex-col overflow-hidden transition-all duration-300">
                                     <div className="bg-gray-100 border-b border-gray-200 px-3 py-2 flex items-center justify-between">
@@ -705,10 +674,8 @@ export default function IdePage() {
                             )}
                         </div>
 
-                        {/* Lower Section: Terminal (Bottom) */}
                         <div className={`rounded-xl border border-[var(--border-color)] bg-[#1e1e1e] shadow-xl flex flex-col overflow-hidden transition-all duration-300 ${showTerminal ? 'h-48' : 'h-9'
                             }`}>
-                            {/* Toggle Tabs */}
                             <div className="flex border-b border-[var(--border-color)] items-center pr-2 bg-[#1e1e1e]">
                                 <div className="flex-1 flex">
                                     <button
@@ -730,7 +697,6 @@ export default function IdePage() {
                                         <MessageSquare className="w-4 h-4" /> Discuss
                                     </button>
                                 </div>
-                                {/* Minimize/Maximize Toggle */}
                                 <button
                                     onClick={() => setShowTerminal(!showTerminal)}
                                     className="p-1 hover:bg-white/10 rounded text-gray-400 ml-2"
@@ -740,10 +706,8 @@ export default function IdePage() {
                                 </button>
                             </div>
 
-                            {/* Content Area */}
                             {showTerminal && (
                                 <div className="flex-1 relative bg-black">
-                                    {/* Terminal View */}
                                     <div className={`absolute inset-0 flex flex-col bg-[#1e1e1e] p-4 text-sm font-mono transition-opacity duration-200 ${activeTab === 'terminal' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                                         }`}>
                                         <div className="flex-1 overflow-y-auto space-y-1 pb-2">
@@ -774,7 +738,7 @@ export default function IdePage() {
                                         </div>
                                     </div>
 
-                                    {/* Discussion / Peer Review View */}
+
                                     <div className={`absolute inset-0 flex flex-col bg-[#1e1e1e] transition-opacity duration-200 ${activeTab === 'discuss' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                                         }`}>
                                         {!isCollaborating ? (

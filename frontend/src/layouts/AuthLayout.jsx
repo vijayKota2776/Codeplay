@@ -1,13 +1,10 @@
-/**
- * Authentication Pages Layout
- * Split-screen design for login/register pages
- */
+
 import { Code, Zap, Rocket, Target } from 'lucide-react';
 
 export default function AuthLayout({ children }) {
     return (
         <div className="min-h-screen bg-[var(--color-dominant)] flex">
-            {/* Left Side - Branding */}
+
             <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-accent)] relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10">
                     <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -51,10 +48,10 @@ export default function AuthLayout({ children }) {
                 </div>
             </div>
 
-            {/* Right Side - Form Content */}
+
             <div className="flex-1 flex items-center justify-center p-8">
                 <div className="w-full max-w-md">
-                    {/* Mobile Logo */}
+
                     <div className="lg:hidden flex items-center gap-2 justify-center mb-8">
                         <Code className="w-10 h-10 text-[var(--color-accent)]" />
                         <h1 className="text-3xl font-extrabold text-[var(--text-primary)]">CODEPLAY</h1>

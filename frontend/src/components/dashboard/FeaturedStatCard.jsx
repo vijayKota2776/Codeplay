@@ -13,7 +13,7 @@ export default function FeaturedStatCard({
         neutral: 'text-[var(--color-slate-400)]',
     };
 
-    // Simple sparkline visualization
+
     const max = Math.max(...chartData.map(d => d.value || 0));
     const min = Math.min(...chartData.map(d => d.value || 0));
     const range = max - min || 1;
@@ -21,7 +21,7 @@ export default function FeaturedStatCard({
     return (
         <div className="featured-card grid-card grid-2x2">
             <div className="h-full flex flex-col justify-between">
-                {/* Header */}
+
                 <div className="flex items-start justify-between mb-6 gap-4">
                     <div className="flex-1 min-w-0">
                         <p className="text-sm text-refined-muted mb-2">{title}</p>
@@ -41,7 +41,6 @@ export default function FeaturedStatCard({
                     )}
                 </div>
 
-                {/* Trend */}
                 {change && (
                     <div className="flex items-center gap-2 mb-6">
                         <span className={`text-lg font-semibold ${trendColors[trend]}`}>
@@ -54,8 +53,7 @@ export default function FeaturedStatCard({
                     </div>
                 )}
 
-                {/* Mini Sparkline Chart */}
-                {chartData.length > 0 && (
+                    {chartData.length > 0 && (
                     <div className="mt-auto">
                         <div className="h-20 flex items-end gap-1">
                             {chartData.map((point, i) => {

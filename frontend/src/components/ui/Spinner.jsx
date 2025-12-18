@@ -1,8 +1,5 @@
 import { cn } from '../../utils/cn';
 
-/**
- * Loading Spinner Component
- */
 export default function Spinner({
     size = 'md',
     color = 'accent',
@@ -44,9 +41,6 @@ export default function Spinner({
     );
 }
 
-/**
- * Full Page Loading Component
- */
 export function PageSpinner({ message = 'Loading...' }) {
     return (
         <div className="fixed inset-0 bg-[var(--color-dominant)] flex flex-col items-center justify-center z-50">

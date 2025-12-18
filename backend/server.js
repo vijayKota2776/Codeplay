@@ -1,4 +1,3 @@
-// backend/server.js
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -16,26 +15,24 @@ const courseRoutes = require('./routes/courseRoutes');
 
 const app = express();
 
-// Middleware
+
 app.use(cors());
 app.use(express.json());
 
-// DB
 connectDB();
 
-// Health check
 app.get('/', (req, res) => {
   res.json({ message: 'CodePlay Backend OK' });
 });
 
-// Routes
-app.use('/api', authRoutes);                   // /api/register, /api/login, /api/me
-app.use('/api/ide', ideRoutes);                // /api/ide/run
-app.use('/api/progress', progressRoutes);      // /api/progress/update
-app.use('/api/submissions', submissionRoutes); // /api/submissions/...
-app.use('/api', reviewRoutes);                 // /api/submissions/:id/reviews
-app.use('/api', dashboardRoutes);              // /api/dashboard, /api/leaderboard
-app.use('/api/courses', courseRoutes);         // /api/courses...
+
+app.use('/api', authRoutes);                   
+app.use('/api/ide', ideRoutes);                
+app.use('/api/progress', progressRoutes);      
+app.use('/api/submissions', submissionRoutes); 
+app.use('/api', reviewRoutes);                 
+app.use('/api', dashboardRoutes);              
+app.use('/api/courses', courseRoutes);        
 
 
 const labRoutes = require('./routes/labRoutes');
@@ -49,7 +46,7 @@ const { Server } = require('socket.io');
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // Allow all origins for simplicity in this demo, restrict in prod
+    origin: "*", 
     methods: ["GET", "POST"]
   }
 });
@@ -68,13 +65,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('code_change', (data) => {
-    // data should contain { room, fileId, content }
-    // Broadcast to everyone else in the room
     socket.to(data.room).emit('receive_code_change', data);
   });
 
   socket.on('send_message', (data) => {
-    // data: { room, sender, message, timestamp }
     io.in(data.room).emit('receive_message', data);
   });
 

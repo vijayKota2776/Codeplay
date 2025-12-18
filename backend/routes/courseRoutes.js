@@ -1,13 +1,10 @@
-// backend/routes/courseRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const Course = require('../models/Course');
 const requireAuth = require('../middleware/auth');
 const requireAdmin = require('../middleware/adminAuth');
-// const validate = require('../middleware/validate');
-// const { createCourseSchema } = require('../validators/courseValidator');
 
-// simple inline validator just to get running
 function basicCourseValidator(req, res, next) {
   const { title, description } = req.body;
   if (!title) {
@@ -19,7 +16,7 @@ function basicCourseValidator(req, res, next) {
   next();
 }
 
-// POST /api/courses  (create/seed course - ADMIN ONLY)
+
 router.post(
   '/',
   requireAuth,
@@ -36,7 +33,7 @@ router.post(
   }
 );
 
-// GET /api/courses  (list courses)
+
 router.get('/', async (req, res) => {
   try {
     const courses = await Course.find().select(
@@ -48,7 +45,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/courses/:id  (get single course with full details)
 router.get('/:id', async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);

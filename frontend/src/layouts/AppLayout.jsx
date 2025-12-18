@@ -1,9 +1,6 @@
 import Navbar from '../components/navigation/Navbar';
 
-/**
- * Main Application Layout
- * Used for authenticated pages
- */
+
 export default function AppLayout({ children }) {
     return (
         <div className="min-h-screen bg-[var(--color-dominant)]">

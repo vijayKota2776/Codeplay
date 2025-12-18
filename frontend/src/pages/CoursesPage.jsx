@@ -19,7 +19,7 @@ export default function CoursesPage() {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                // Explicitly log the URL being requested for debugging
+
                 console.log('Fetching courses from:', api.defaults.baseURL + '/courses');
                 const res = await api.get('/courses');
                 setCourses(res.data);
@@ -82,7 +82,7 @@ export default function CoursesPage() {
     return (
         <AppLayout>
             <div className="space-y-6 animate-fadeInUp">
-                {/* Header */}
+
                 <div>
                     <h1 className="text-4xl font-extrabold text-gradient mb-2">
                         Explore Courses
@@ -92,7 +92,7 @@ export default function CoursesPage() {
                     </p>
                 </div>
 
-                {/* Search */}
+
                 <div className="max-w-xl">
                     <Input
                         type="text"
@@ -103,19 +103,17 @@ export default function CoursesPage() {
                     />
                 </div>
 
-                {/* Courses Grid */}
+
                 {filteredCourses.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredCourses.map((course) => (
                             <Link key={course._id} to={`/courses/${course._id}`}>
                                 <Card variant="glass" className="hover-lift h-full">
                                     <div className="space-y-4">
-                                        {/* Course Icon */}
+
                                         <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-accent)] flex items-center justify-center text-3xl">
                                             {course.icon || '📚'}
                                         </div>
-
-                                        {/* Course Info */}
                                         <div>
                                             <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
                                                 {course.title}
@@ -125,7 +123,6 @@ export default function CoursesPage() {
                                             </p>
                                         </div>
 
-                                        {/* Stats */}
                                         <div className="flex items-center gap-4 text-sm">
                                             <div className="flex items-center gap-1 text-[var(--text-tertiary)]">
                                                 <BookOpen className="w-4 h-4" />
@@ -140,7 +137,6 @@ export default function CoursesPage() {
                                             </div>
                                         </div>
 
-                                        {/* Level Badge */}
                                         <div>
                                             <Badge
                                                 variant={

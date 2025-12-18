@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
   },
   userName: {
     type: String,
-    sparse: true  // Allow multiple nulls, prevents duplicate key error
+    sparse: true  
   },
   password: {
     type: String,

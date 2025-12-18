@@ -1,9 +1,5 @@
 import { useState } from 'react';
 import { cn } from '../../utils/cn';
-
-/**
- * Form Input Component with validation states
- */
 export default function Input({
     label = '',
     error = '',

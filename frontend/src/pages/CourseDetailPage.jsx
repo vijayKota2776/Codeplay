@@ -58,7 +58,7 @@ export default function CourseDetailPage() {
     return (
         <AppLayout>
             <div className="space-y-8 animate-fadeInUp">
-                {/* Course Header */}
+
                 <div className="glass rounded-2xl p-8">
                     <div className="flex items-start justify-between gap-6">
                         <div className="flex-1">
@@ -82,13 +82,8 @@ export default function CourseDetailPage() {
                     </div>
                 </div>
 
-                {/* Course Topics/Modules */}
-
-
-                {/* Course Topics/Modules */}
                 {(course.sections && course.sections.length > 0) || (course.topics && course.topics.length > 0) ? (
                     <div className="space-y-6">
-                        {/* Check if we have sections (new structure) or just topics (old structure) */}
                         {course.sections && course.sections.length > 0 ? (
                             course.sections.map((section, sIndex) => (
                                 <div key={section._id || sIndex} className="space-y-3">
@@ -129,7 +124,7 @@ export default function CourseDetailPage() {
                                 </div>
                             ))
                         ) : (
-                            /* Fallback for flat topics structure */
+
                             <div className="space-y-3">
                                 {course.topics.map((topic, index) => (
                                     <Card
@@ -184,7 +179,7 @@ export default function CourseDetailPage() {
                 )}
             </div>
 
-            {/* Action Buttons */}
+
             <div className="flex gap-4">
                 <Button variant="primary" size="lg" className="flex-1">
                     Continue Learning

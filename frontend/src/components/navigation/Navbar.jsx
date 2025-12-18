@@ -29,7 +29,6 @@ export default function Navbar() {
         <nav className="sticky top-0 z-[var(--z-sticky)] glass border-b border-[var(--border-color)]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                    {/* Logo */}
                     <Link
                         to="/dashboard"
                         className="flex items-center gap-2 text-xl font-bold text-gradient hover:scale-105 transition-transform"
@@ -38,7 +37,6 @@ export default function Navbar() {
                         <span>CODEPLAY</span>
                     </Link>
 
-                    {/* Desktop Navigation */}
                     {!isMobile && (
                         <div className="flex items-center gap-1">
                             {navLinks.map((link) => (
@@ -56,7 +54,6 @@ export default function Navbar() {
                         </div>
                     )}
 
-                    {/* User Menu */}
                     <div className="flex items-center gap-4">
                         {!isMobile && user && (
                             <div className="relative">
@@ -75,7 +72,6 @@ export default function Navbar() {
                                     />
                                 </button>
 
-                                {/* Dropdown Menu */}
                                 {profileMenuOpen && (
                                     <>
                                         <div
@@ -100,7 +96,6 @@ export default function Navbar() {
                             </div>
                         )}
 
-                        {/* Mobile Menu Button */}
                         {isMobile && (
                             <button
                                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -116,7 +111,6 @@ export default function Navbar() {
                     </div>
                 </div>
 
-                {/* Mobile Menu */}
                 {isMobile && mobileMenuOpen && (
                     <div className="pb-4 animate-fadeInUp">
                         {navLinks.map((link) => (

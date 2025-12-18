@@ -1,9 +1,5 @@
 import { cn } from '../../utils/cn';
 
-/**
- * Card Container Component
- * Variants: flat, raised, outlined, glass
- */
 export default function Card({
     children,
     variant = 'raised',

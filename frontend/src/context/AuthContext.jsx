@@ -9,14 +9,14 @@ export const AuthProvider = ({ children }) => {
     const [isAuthed, setIsAuthed] = useState(false);
 
     useEffect(() => {
-        // Check for existing session on mount
+
         const checkAuth = async () => {
             const token = localStorage.getItem('token');
             const storedUser = localStorage.getItem('user');
 
             if (token && storedUser) {
                 try {
-                    // Set axios default header
+
                     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                     setUser(JSON.parse(storedUser));
                     setIsAuthed(true);

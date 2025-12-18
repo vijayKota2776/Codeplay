@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-// Create axios instance with base configuration
-// Create axios instance with base configuration
 export const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5001/api',
   headers: {
@@ -9,7 +7,6 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor to add token to requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -23,12 +20,10 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle common errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid, logout user
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';

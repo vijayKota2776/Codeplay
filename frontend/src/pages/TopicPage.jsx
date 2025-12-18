@@ -35,7 +35,7 @@ export default function TopicPage() {
 
                 setTopic(foundTopic);
 
-                // Fetch User Progress for this course
+                
                 try {
                     const progRes = await api.get(`/progress/${courseId}`);
                     const completedIds = progRes.data?.completed || [];
