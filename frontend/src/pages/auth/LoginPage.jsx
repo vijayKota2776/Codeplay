@@ -8,8 +8,8 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('admin1@example.com');
-    const [password, setPassword] = useState('Pass1234!');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
